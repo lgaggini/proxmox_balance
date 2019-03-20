@@ -31,6 +31,9 @@ def log_init(loglevel):
 
 
 def get_cluster(vm):
+    """ get the cluster name from the vm name:
+    the env (prod, staging, dev) is inherithed by
+    the host index"""
     base_cluster = '%s%s' % (vm[:1], vm[1:].strip(digits))
     logger.debug(vm)
     try:
@@ -47,6 +50,7 @@ def get_cluster(vm):
 
 
 def get_total(balance_map, cluster):
+    """ get the the total number of hosts for cluster """
     total = 0
     for node in balance_map:
         if cluster in balance_map[node]:
@@ -55,6 +59,7 @@ def get_total(balance_map, cluster):
 
 
 def get_unbalanced(balance_map, th_percentage, th):
+    """ get a map of cluster distribution on proxmox node """
     unbalanced = {}
     for node in balance_map:
         for cluster in balance_map[node]:
@@ -75,6 +80,7 @@ def get_unbalanced(balance_map, th_percentage, th):
 
 
 def unbalanced_sort_by(unbalanced, key, reverse=False):
+    """ sort a dict of dict by a subdict key """
     ordered = sorted(unbalanced.items(), key=lambda x: x[1][key],
                      reverse=reverse)
     logger.debug(ordered)
@@ -82,6 +88,7 @@ def unbalanced_sort_by(unbalanced, key, reverse=False):
 
 
 def unbalanced_sort(unbalanced, key):
+    """ sort the unbalanced map by a custom key """
     if key == 'cluster':
         logger.info('sort by cluster')
         for cluster in sorted(unbalanced.keys()):
@@ -100,11 +107,13 @@ def unbalanced_sort(unbalanced, key):
 
 
 def unbalanced_get(unbalanced, cluster):
+    """ get dict values from unbalanced dict """
     entry = unbalanced[cluster]
     return entry['qty'], entry['total'], entry['percentage'], entry['node']
 
 
 def ordered_log(ordered):
+    """ format an ordered tuple """
     for entry in ordered:
         logger.info('%s: %s/%s %s%% - %s' % (entry[0], entry[1]['qty'],
                                              entry[1]['total'],
@@ -113,6 +122,7 @@ def ordered_log(ordered):
 
 
 def percentage(string):
+    """ validation for a percentage value """
     value = int(string)
     if value > 100 or value < 0:
         msg = '%r is not a valid percentage value (0-100)' % (string)
