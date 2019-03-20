@@ -71,7 +71,7 @@ def get_unbalanced(balance_map, th_percentage, th):
                                                       percentage, node))
                 unbalanced[cluster] = {}
                 unbalanced[cluster]['qty'] = qty
-                unbalanced[cluster]['total'] = qty
+                unbalanced[cluster]['total'] = total
                 unbalanced[cluster]['percentage'] = percentage
                 unbalanced[cluster]['node'] = node
 
