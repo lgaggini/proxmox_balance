@@ -155,7 +155,6 @@ if __name__ == '__main__':
     percentage = cli_options.percentage
     threshold = cli_options.threshold
     node_filter = cli_options.node
-    logger.info(node_filter)
 
     balance_map = {}
 
