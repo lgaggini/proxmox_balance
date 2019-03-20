@@ -1,0 +1,10 @@
+# proxmox settings
+PROXMOX = {
+    'HOST': 'kvm41.it.dadainternal',
+    'USER': 'root@pam',
+    'PASSWORD': 'pass.gpg'
+}
+
+# threshold settings
+STATIC_THRESHOLD = 1
+DYNAMIC_THRESHOLD = 40
