@@ -56,12 +56,12 @@ def get_total(balance_map, cluster):
     return total
 
 
-def get_unbalanced(balance_map, th_percentage, th):
+def get_unbalanced(filtered_balance_map, balance_map, th_percentage, th):
     """ get a map of cluster distribution on proxmox node """
     unbalanced = {}
-    for node in balance_map:
-        for cluster in balance_map[node]:
-            qty = balance_map[node][cluster]
+    for node in filtered_balance_map:
+        for cluster in filtered_balance_map[node]:
+            qty = filtered_balance_map[node][cluster]
             total = get_total(balance_map, cluster)
             percentage = round(qty/total*100)
             if qty > th and percentage > th_percentage:
@@ -155,24 +155,37 @@ if __name__ == '__main__':
     node_filter = cli_options.node
 
     balance_map = {}
+    filtered_balance_map = {}
 
     proxmox = ProxmoxAPI(PROXMOX['HOST'], user=PROXMOX['USER'],
                          password=PROXMOX['PASSWORD'], verify_ssl=False)
 
     for node in proxmox.nodes.get():
         n_name = node['node']
-        if node_filter is None or n_name == node_filter:
-            balance_map[n_name] = {}
-            for vm in proxmox.nodes(node['node']).qemu.get():
-                if vm['status'] == 'running':
-                    try:
-                        cluster = get_cluster(vm['name'])
-                        if cluster in balance_map[n_name]:
-                            balance_map[n_name][cluster] += 1
+        balance_map[n_name] = {}
+        if node_filter is not None and n_name == node_filter:
+            filtered_balance_map[n_name] = {}
+        for vm in proxmox.nodes(node['node']).qemu.get():
+            if vm['status'] == 'running':
+                try:
+                    cluster = get_cluster(vm['name'])
+                    if cluster in balance_map[n_name]:
+                        balance_map[n_name][cluster] += 1
+                    else:
+                        balance_map[n_name][cluster] = 1
+                    if n_name == node_filter:
+                        if cluster in filtered_balance_map[n_name]:
+                            filtered_balance_map[n_name][cluster] += 1
                         else:
-                            balance_map[n_name][cluster] = 1
-                    except ValueError:
-                        pass
+                            filtered_balance_map[n_name][cluster] = 1
+                except ValueError:
+                    pass
 
-    unbalanced = get_unbalanced(balance_map, percentage, threshold)
+    if node_filter is not None:
+        unbalanced = get_unbalanced(filtered_balance_map, balance_map,
+                                    percentage, threshold)
+    else:
+        unbalanced = get_unbalanced(balance_map, balance_map, percentage,
+                                    threshold)
+
     unbalanced_sort(unbalanced, sort_key)
