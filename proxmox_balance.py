@@ -12,9 +12,7 @@ from settings import DYNAMIC_THRESHOLD
 import logging
 import coloredlogs
 import argparse
-
-proxmox = ProxmoxAPI(PROXMOX['HOST'], user=PROXMOX['USER'],
-                     password=PROXMOX['PASSWORD'], verify_ssl=False)
+import re
 
 LOG_LEVELS = ['debug', 'info', 'warning', 'error', 'critical']
 SORT_KEYS = ['cluster', 'qty', 'percentage', 'node']
@@ -157,6 +155,9 @@ if __name__ == '__main__':
     node_filter = cli_options.node
 
     balance_map = {}
+
+    proxmox = ProxmoxAPI(PROXMOX['HOST'], user=PROXMOX['USER'],
+                         password=PROXMOX['PASSWORD'], verify_ssl=False)
 
     for node in proxmox.nodes.get():
         n_name = node['node']
